@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use SC-ML (scml) in your research, please cite it as below."
+title: "scml: Structure-Centric Machine Learning (SCOPE, AdaBox, SLCD)"
+type: software
+version: 0.1.0
+date-released: 2026-01-01
+authors:
+  - family-names: Elmahdi
+    given-names: Ahmed
+    name-prefix: Dr.
+url: "https://structurecentricml.com"
+repository-code: "https://github.com/When-Plan-B-Comes-First/scml"
+keywords:
+  - clustering
+  - density-based clustering
+  - clustering evaluation
+  - SCOPE
+  - AdaBox
+  - SLCD
+  - structure-centric machine learning
+preferred-citation:
+  type: article
+  title: "SCOPE: A Structure-Centric Metric for Clustering Evaluation"
+  authors:
+    - family-names: Elmahdi
+      given-names: Ahmed
+      name-prefix: Dr.
+  year: 2026
+  url: "https://arxiv.org/a/elmahdi_a_1"
+  notes: "Replace with the canonical paper title, venue/arXiv ID, and year once finalised."

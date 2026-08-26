@@ -1,0 +1,42 @@
+SC-ML SOURCE-AVAILABLE LICENSE (DRAFT — NOT YET EFFECTIVE)
+==========================================================
+
+IMPORTANT: This license text is a DRAFT placeholder. It has NOT been reviewed
+by an IP attorney and is NOT the final license. Do not rely on it as legal
+permission until a final, attorney-reviewed version replaces this file prior to
+public release.
+
+Copyright (c) 2026 Ahmed Elmahdi. All rights reserved.
+
+Summary of intended terms (to be formalised by counsel)
+-------------------------------------------------------
+
+1. Research and non-commercial use
+   Permission is granted, free of charge, to any person or organisation to use,
+   copy, modify, and distribute this software and its source code SOLELY for
+   research, academic, evaluation, and other non-commercial purposes, subject
+   to the attribution requirement below.
+
+2. Commercial use
+   Any commercial use — including use in a product or service offered for sale,
+   internal business operations of a for-profit entity, or any use that
+   generates revenue, directly or indirectly — requires a separate paid
+   commercial license. Contact the copyright holder to obtain one.
+
+3. Attribution
+   All copies, modifications, and derivative works must retain this notice and
+   must cite the work as described in CITATION.cff.
+
+4. Patents
+   This software is associated with filed patent applications (see PATENTS.md).
+   No patent license is granted except as expressly stated in a separate
+   written agreement.
+
+5. No warranty
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES, OR
+   OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+-----------------------------------------------------------------------------
+ACTION REQUIRED before public release: replace this draft with the final
+license text approved by an IP attorney.
