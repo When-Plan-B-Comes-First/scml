@@ -195,4 +195,4 @@ the relevant arXiv preprint.
 ## Links
 
 - Website: <https://structurecentricml.com>
-- Preprints: <https://arxiv.org/a/elmahdi_a_1>
+- Preprints: <https://arxiv.org/pdf/2605.16320>
