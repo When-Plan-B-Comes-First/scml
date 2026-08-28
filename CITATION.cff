@@ -9,7 +9,7 @@ authors:
     given-names: Ahmed
     name-prefix: Dr.
 url: "https://structurecentricml.com"
-repository-code: "https://github.com/When-Plan-B-Comes-First/scml"
+repository-code: "https://github.com/When-Plan-B-Comes-First/scml-v1"
 keywords:
   - clustering
   - density-based clustering
@@ -20,11 +20,10 @@ keywords:
   - structure-centric machine learning
 preferred-citation:
   type: article
-  title: "SCOPE: A Structure-Centric Metric for Clustering Evaluation"
+  title: "AdaGraph: A Graph-Native Clustering Algorithm That Overcomes the Curse of Dimensionality and Enables Scientific Discovery"
   authors:
     - family-names: Elmahdi
       given-names: Ahmed
       name-prefix: Dr.
   year: 2026
-  url: "https://arxiv.org/a/elmahdi_a_1"
-  notes: "Replace with the canonical paper title, venue/arXiv ID, and year once finalised."
+  url: "https://arxiv.org/pdf/2605.16320"
