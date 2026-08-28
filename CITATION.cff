@@ -11,7 +11,7 @@ authors:
     name-prefix: Dr.
     email: "ahmed@structurecentricml.com"
 url: "https://structurecentricml.com"
-repository-code: "https://github.com/When-Plan-B-Comes-First/scml-v1"
+repository-code: "https://github.com/When-Plan-B-Comes-First/scml"
 keywords:
   - clustering
   - density-based clustering
@@ -40,5 +40,5 @@ references:
         given-names: Ahmed
         name-prefix: Dr.
     year: 2026
-    url: "https://arxiv.org/pdf/2605.16320"
+    url: "https://arxiv.org/abs/2605.16320"
     notes: "arXiv preprint 2605.16320. Describes the High-D track (AdaGraph)."
