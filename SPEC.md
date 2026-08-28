@@ -101,10 +101,17 @@ objective; core fraction uses k-NN density with the SCOPE v5 settings.
 
 ## SCOPE (paper §4.2, Paper 1 of the series)
 
+SCOPE = **Structured Clustering Optimization via Performance Evaluation**. The
+name is deliberate: SCOPE's primary role is as a tuning *objective*, not merely
+a reporting metric. It is a better optimizer signal than ARI, and that is the
+claim to preserve in all public wording — do not describe it as "just another
+clustering metric".
+
 Weighted five-component composite: Core Purity (25%), Boundary Recall (25%),
 Cluster Precision (20%), Noise F1 (20%), Cluster Count Accuracy (10%). Core
 identification uses k-NN local density; cluster matching uses the Hungarian
-algorithm. This is the only tuning objective.
+algorithm. This is the only tuning objective, for AdaBox and for every baseline
+it is compared against.
 
 ---
 
@@ -112,7 +119,16 @@ algorithm. This is the only tuning objective.
 
 - Public algorithm names: **AdaBox** (low-D) and **AdaGraph** (high-D) only.
 - "AdaHD" must never appear in any public-facing place.
-- The acronym is **SLCD = Sample-Label-Calibrate-Deploy**.
+- The acronym **SLCD** names a family with a track-specific expansion. Both
+  expansions are correct and must be used with their own track; they are not
+  interchangeable, and neither is a typo for the other:
+    * Low-D  (AdaBox):   **Sample-Label-Calibrate-Deploy** — Deploy = parameter
+      transfer. Matches U.S. application 63/969,070.
+    * High-D (AdaGraph): **Sample-Learn-Classify-Deploy** — Deploy = assigning
+      remaining points to the sample's clusters by voting. Matches U.S.
+      application 64/056,834.
+  The shared invariant, and the reason both are called SLCD: the full dataset
+  is never tuned.
 
 ---
 

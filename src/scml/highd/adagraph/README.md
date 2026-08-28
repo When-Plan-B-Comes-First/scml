@@ -7,7 +7,8 @@ high-dimensional data.
 
 **Status:** preprint available; reference implementation in preparation.
 
-**Preprint:** see the SC-ML arXiv listing — <https://arxiv.org/a/elmahdi_a_1>
-(replace with the AdaGraph preprint link once assigned).
+**Preprint:** *AdaGraph: A Graph-Native Clustering Algorithm That Overcomes
+the Curse of Dimensionality and Enables Scientific Discovery* —
+<https://arxiv.org/abs/2605.16320>
 
 The low-D clustering algorithm is available now: `from scml.lowd import AdaBox`.

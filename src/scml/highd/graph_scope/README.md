@@ -9,7 +9,7 @@ and high-D embeddings.
 **Status:** released as a preprint; reference implementation is being prepared
 for this repository.
 
-**Preprint:** see the SC-ML arXiv listing — <https://arxiv.org/a/elmahdi_a_1>
-(replace with the Graph-SCOPE preprint link once assigned).
+**Preprint:** Graph-SCOPE is introduced alongside the high-D track; see the
+AdaGraph preprint — <https://arxiv.org/abs/2605.16320>
 
 The low-D SCOPE is available now: `from scml.lowd import scope_score`.

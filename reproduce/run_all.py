@@ -66,7 +66,7 @@ def cluster_direct(X, y):
 
 
 def cluster_with_slcd(X, y):
-    """Cluster via the SLCD Sample->Calibrate->Deploy workflow."""
+    """Cluster via the SLCD Sample->Label->Calibrate->Deploy workflow."""
     slcd = SLCD(sample_size=min(500, len(X) // 2), random_state=RANDOM_STATE)
     labels = slcd.fit_predict(X, y)
     return labels, slcd.best_params_

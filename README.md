@@ -57,11 +57,16 @@ conventions, so AdaBox drops into any workflow you already have.
 
 ## What's in the low-D track
 
-**SCOPE** — *Structured Clustering Output Performance Evaluation.* A
-structure-aware quality metric that decomposes a clustering into five
-interpretable components (core purity, boundary recall, cluster precision,
-noise F1, cluster-count accuracy) and reports a single `[0, 1]` overall score.
-Unlike ARI, it rewards recovering the right *structure*.
+**SCOPE** — *Structured Clustering Optimization via Performance Evaluation.* A
+structure-aware *optimization objective*, not just a report-time score. It
+decomposes a clustering into five interpretable components (core purity,
+boundary recall, cluster precision, noise F1, cluster-count accuracy) and
+combines them into a single `[0, 1]` value.
+
+Because it rewards recovering the right *structure* rather than exact label
+matching, SCOPE is a better signal than ARI for driving hyperparameter search —
+it is the objective every algorithm in this repo is tuned against. Reporting it
+is the secondary use; optimizing against it is the point.
 
 ```python
 from scml.lowd import scope_report
@@ -78,11 +83,11 @@ search → `min_cluster_size`/merge refinement → anti-fragmentation), reached 
 ~5,000 points, SLCD tunes AdaBox on a small stratified sample using Random
 Search and scale-invariant relative density, then deploys the frozen parameters
 to the full dataset. Because the parameters encode structure rather than
-distance, they transfer across orders of magnitude of scale.
+distances, they transfer across orders of magnitude of scale.
 
 ```python
 from scml.lowd import SLCD
-labels = SLCD(sample_size=500).fit_predict(X_large, y_large)
+labels = SLCD().fit_predict(X_large, y_large)
 ```
 
 > **When to use which.** Up to ~5,000 points, use `AdaBox().tune(X, y)` — it
@@ -98,6 +103,20 @@ labels = SLCD(sample_size=500).fit_predict(X_large, y_large)
 > SLCD has **separate** low-D and high-D implementations — same idea, different
 > code. The low-D one lives in `scml.lowd`; the high-D one will live in
 > `scml.highd`.
+
+
+### SLCD is a family, not one algorithm
+
+Both tracks avoid the thing that makes large-scale density clustering
+impractical: **neither ever tunes the full dataset.** That shared invariant is
+what SLCD names. The mechanism differs by track, and the two implementations
+are *not* interchangeable:
+
+| | Low-D (shipping here) | High-D (coming soon) |
+|---|---|---|
+| Expansion | Sample → **Label** → **Calibrate** → Deploy | Sample → **Learn** → **Classify** → Deploy |
+| Algorithm | AdaBox | AdaGraph |
+| What "Deploy" means | **Parameter transfer** — parameters tuned on the sample cluster the full dataset | **Point assignment** — AdaGraph clusters the sample, then remaining points are assigned to those clusters by voting |
 
 ---
 
@@ -177,22 +196,31 @@ install, run one command, see the numbers.
 ## High-D track (coming soon)
 
 The high-D track extends SC-ML to graph-structured and high-dimensional data
-with **Graph-SCOPE**, **AdaGraph**, and **DA-Sampler**. The code is in
-preparation; each folder under `src/scml/highd/` has a short README pointing to
-the relevant arXiv preprint.
+with **Graph-SCOPE**, **AdaGraph**, and **DA-Sampler**, using the high-D SLCD
+(Sample → Learn → Classify → Deploy). The methods are described in the
+[AdaGraph preprint](https://arxiv.org/abs/2605.16320); the code is in
+preparation.
 
 ---
 
 ## Licensing & citation
 
-- **License:** source-available — free for research and non-commercial use,
-  paid for commercial use. See [LICENSE](LICENSE). *(Final terms pending IP
-  attorney review prior to public release.)*
-- **Patents:** see [PATENTS.md](PATENTS.md).
-- **Citation:** see [CITATION.cff](CITATION.cff) or the "Cite this repository"
-  button on GitHub.
+- **License:** [SC-ML Source-Available License 1.0](LICENSE) — free for
+  research, teaching, evaluation, and other non-commercial use; a paid
+  commercial license is required for commercial use.
+- **Patents:** four U.S. patent applications filed in 2026 cover these methods.
+  See [PATENTS.md](PATENTS.md). No patent rights are granted beyond
+  non-commercial use.
+- **Citation:** see [CITATION.cff](CITATION.cff), or use GitHub's
+  "Cite this repository" button.
+
+**Commercial licensing:** ahmed@structurecentricml.com
+
+If you publish results produced with this software, please cite the AdaBox
+paper and the repository.
 
 ## Links
 
-- Website: <https://structurecentricml.com>
-- Preprints: <https://arxiv.org/a/elmahdi_a_1>
+- **Website:** <https://structurecentricml.com>
+- **AdaBox paper (Low-D):** <https://arxiv.org/abs/2603.13339>
+- **AdaGraph paper (High-D):** <https://arxiv.org/abs/2605.16320>

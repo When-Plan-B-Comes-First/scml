@@ -11,8 +11,18 @@ Calibration is where the algorithm's strength lives: an untuned AdaBox is just
 another density clusterer, but the three-phase calibration is what makes it
 competitive with and often better than DBSCAN/HDBSCAN.
 
-This is the low-D implementation. The high-D track ships a separate SLCD (see
-scml.highd) -- same concept, different code.
+SLCD names a family, not a single algorithm. Each track instantiates it with
+its own mechanism, and the two are not interchangeable:
+
+  * Low-D  (this module): Sample -> Label -> Calibrate -> Deploy.
+    "Deploy" means true *parameter transfer* -- the parameters tuned on the
+    sample are used to cluster the full dataset.
+  * High-D (scml.highd):  Sample -> Learn -> Classify -> Deploy.
+    "Deploy" means AdaGraph clusters the sample, then the remaining points are
+    assigned to those clusters by a voting mechanism.
+
+What the two share is the invariant that gives SLCD its value: the full dataset
+is never tuned.
 """
 
 import numpy as np

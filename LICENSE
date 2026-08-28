@@ -1,42 +1,191 @@
-SC-ML SOURCE-AVAILABLE LICENSE (DRAFT — NOT YET EFFECTIVE)
-==========================================================
-
-IMPORTANT: This license text is a DRAFT placeholder. It has NOT been reviewed
-by an IP attorney and is NOT the final license. Do not rely on it as legal
-permission until a final, attorney-reviewed version replaces this file prior to
-public release.
+SC-ML SOURCE-AVAILABLE LICENSE
+Version 1.0
 
 Copyright (c) 2026 Ahmed Elmahdi. All rights reserved.
 
-Summary of intended terms (to be formalised by counsel)
--------------------------------------------------------
+================================================================================
+PLAIN-LANGUAGE SUMMARY (not a substitute for the terms below)
+================================================================================
 
-1. Research and non-commercial use
-   Permission is granted, free of charge, to any person or organisation to use,
-   copy, modify, and distribute this software and its source code SOLELY for
-   research, academic, evaluation, and other non-commercial purposes, subject
-   to the attribution requirement below.
+  FREE for research, teaching, evaluation, and other non-commercial use.
+  PAID license required for commercial use.
+  The software is patent-pending; no patent rights are granted beyond
+  non-commercial use.
+  Keep the copyright notice, and cite the work in publications.
 
-2. Commercial use
-   Any commercial use — including use in a product or service offered for sale,
-   internal business operations of a for-profit entity, or any use that
-   generates revenue, directly or indirectly — requires a separate paid
-   commercial license. Contact the copyright holder to obtain one.
+================================================================================
+TERMS AND CONDITIONS
+================================================================================
 
-3. Attribution
-   All copies, modifications, and derivative works must retain this notice and
-   must cite the work as described in CITATION.cff.
+1. DEFINITIONS
 
-4. Patents
-   This software is associated with filed patent applications (see PATENTS.md).
-   No patent license is granted except as expressly stated in a separate
-   written agreement.
+1.1 "Software" means the source code, object code, documentation, and other
+    materials in this repository, and any modified versions of them.
 
-5. No warranty
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES, OR
-   OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+1.2 "Licensor" means Ahmed Elmahdi, the copyright holder and applicant of the
+    Patent Rights.
 
------------------------------------------------------------------------------
-ACTION REQUIRED before public release: replace this draft with the final
-license text approved by an IP attorney.
+1.3 "You" means the individual or legal entity exercising rights under this
+    License. If You are acting on behalf of an entity, "You" includes that
+    entity and all entities that control, are controlled by, or are under
+    common control with it.
+
+1.4 "Patent Rights" means the United States patent applications identified in
+    the accompanying PATENTS.md file, together with any patents issuing from
+    them, and any continuations, divisionals, continuations-in-part, reissues,
+    renewals, extensions, and foreign counterparts of any of them.
+
+1.5 "Non-Commercial Use" means use that is not primarily intended for or
+    directed toward commercial advantage or monetary compensation. It includes,
+    without limitation: academic research; teaching and coursework; personal
+    study; evaluation of the Software; and use by a non-profit research
+    institution or government research body in the course of its research or
+    educational mission, including research funded by government or non-profit
+    grants.
+
+1.6 "Commercial Use" means any use that is not Non-Commercial Use. It includes,
+    without limitation: use in or to develop a product or service that is sold,
+    licensed, leased, or otherwise offered to third parties for consideration;
+    use in the internal business operations of a for-profit entity; use to
+    provide services to third parties for consideration; use in a hosted,
+    managed, or software-as-a-service offering; and use in research that is
+    funded by, or whose results are contractually promised to, a for-profit
+    entity. Publication of academic results by an employee of a for-profit
+    entity is not by itself Commercial Use, provided the Software is not
+    otherwise used for Commercial Use.
+
+2. GRANT OF COPYRIGHT LICENSE
+
+2.1 Subject to the terms of this License, Licensor grants You a worldwide,
+    royalty-free, non-exclusive, non-transferable, non-sublicensable license to
+    reproduce, prepare derivative works of, publicly display, publicly perform,
+    and distribute the Software, in each case solely for Non-Commercial Use.
+
+2.2 This grant does not extend to Commercial Use. Commercial Use requires a
+    separate written commercial license from Licensor.
+
+3. GRANT OF PATENT LICENSE
+
+3.1 Subject to the terms of this License, Licensor grants You a worldwide,
+    royalty-free, non-exclusive, non-transferable, non-sublicensable license
+    under the Patent Rights to make, use, and reproduce the Software, in each
+    case solely for Non-Commercial Use, and solely to the extent that such
+    activity would otherwise infringe the Patent Rights.
+
+3.2 No license is granted under the Patent Rights for Commercial Use, for the
+    manufacture or sale of any product or service, or for any implementation of
+    the methods claimed in the Patent Rights other than the Software as
+    provided. All rights under the Patent Rights not expressly granted in
+    Section 3.1 are reserved by Licensor.
+
+3.3 No patent license is granted by implication, estoppel, exhaustion, or
+    otherwise. Making the Software publicly available does not dedicate the
+    Patent Rights to the public and does not constitute a waiver of any claim
+    under the Patent Rights.
+
+4. CONDITIONS
+
+You must satisfy all of the following:
+
+4.1 Notices. You must retain, in all copies and substantial portions of the
+    Software, this License, the copyright notice above, and the PATENTS.md
+    file.
+
+4.2 Modifications. If You distribute a modified version of the Software, You
+    must mark it prominently as modified and must not represent it as the
+    unmodified work of Licensor.
+
+4.3 Attribution in Publications. If You use the Software to produce results
+    that are published or publicly presented, You must cite the Software and
+    the associated publications as described in CITATION.cff.
+
+4.4 Downstream Terms. You may distribute the Software or derivative works only
+    under this License, unmodified, and only to recipients who accept it.
+
+5. COMMERCIAL LICENSING
+
+5.1 Commercial licenses, including licenses covering the Patent Rights for
+    commercial purposes, are available from Licensor on reasonable terms.
+    Inquiries should be directed to Licensor at ahmed@structurecentricml.com, or through the
+    contact information published at https://structurecentricml.com.
+
+5.2 Nothing in this License obliges Licensor to grant a commercial license or
+    to grant one on any particular terms.
+
+6. TRADEMARKS
+
+This License grants no rights to use the names, logos, or trademarks of
+Licensor, including "SC-ML", "AdaBox", "AdaGraph", "SCOPE", "Graph-SCOPE", and
+"SLCD", except as required for reasonable and customary attribution.
+
+7. TERMINATION
+
+7.1 This License and all rights granted under it terminate automatically if You
+    breach any of its terms.
+
+7.2 If Your breach is curable and You cure it within thirty (30) days of
+    becoming aware of it, and it is Your first such breach, Your rights are
+    reinstated on cure.
+
+7.3 Patent Defense. This License and all rights granted under it, including the
+    patent license in Section 3, terminate immediately and automatically if You
+    or any entity affiliated with You initiate or voluntarily join any patent
+    infringement claim, counterclaim, or proceeding alleging that the Software
+    or the Patent Rights infringe any patent.
+
+7.4 Sections 1, 3.2, 3.3, 6, and 8 through 12 survive termination.
+
+8. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, TITLE, ACCURACY, AND NON-INFRINGEMENT.
+LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL BE ERROR-FREE, THAT ITS
+RESULTS WILL BE CORRECT, OR THAT IT IS SUITABLE FOR ANY PARTICULAR PURPOSE.
+
+9. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL LICENSOR
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, DATA, OR USE,
+ARISING OUT OF OR RELATING TO THIS LICENSE OR THE SOFTWARE, WHETHER IN
+CONTRACT, TORT, OR OTHERWISE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGES. LICENSOR'S TOTAL AGGREGATE LIABILITY SHALL NOT EXCEED ONE HUNDRED
+U.S. DOLLARS (USD 100).
+
+10. EXPORT AND COMPLIANCE
+
+You are responsible for complying with all applicable laws and regulations,
+including export control laws, in Your use and distribution of the Software.
+
+11. GOVERNING LAW AND VENUE
+
+This License is governed by the laws of the State of Indiana, United States of
+America, without regard to its conflict-of-laws principles. The exclusive venue
+for any dispute arising under this License shall be the state and federal courts
+located in the State of Indiana, and You consent to their personal jurisdiction.
+
+This Section governs contractual disputes arising under this License. It does
+not purport to alter the exclusive jurisdiction of the United States federal
+courts over questions of patent infringement or validity.
+
+12. GENERAL
+
+12.1 Entire Agreement. This License is the entire agreement between You and
+     Licensor concerning the Software, and supersedes any prior or
+     contemporaneous understandings.
+
+12.2 Severability. If any provision of this License is held unenforceable, that
+     provision shall be modified to the minimum extent necessary to make it
+     enforceable, and the remaining provisions shall remain in full force.
+
+12.3 No Waiver. Licensor's failure to enforce any provision is not a waiver of
+     its right to do so later.
+
+12.4 Reservation. All rights not expressly granted in this License are
+     reserved by Licensor.
+
+================================================================================
+By using, copying, modifying, or distributing the Software, You accept and
+agree to be bound by this License.
+================================================================================

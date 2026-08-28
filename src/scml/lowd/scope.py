@@ -1,15 +1,21 @@
 """
-SCOPE: Structured Clustering Output Performance Evaluation.
+SCOPE: Structured Clustering Optimization via Performance Evaluation.
 
-A structure-aware clustering quality metric that decomposes quality into
-five interpretable components (core purity, boundary recall, cluster
-precision, noise F1, cluster-count accuracy). Unlike ARI, SCOPE rewards
-correct recovery of cluster *structure* rather than exact label matching.
+SCOPE is a structure-aware *optimization objective* for clustering, not only a
+report-time score. It decomposes clustering quality into five interpretable
+components (core purity, boundary recall, cluster precision, noise F1,
+cluster-count accuracy) and combines them into a single value in [0, 1].
+
+Because it rewards correct recovery of cluster *structure* rather than exact
+label matching, SCOPE gives a smoother, more informative signal than ARI when
+used to drive hyperparameter search -- which is how AdaBox is tuned. Its value
+is therefore twofold: a better metric to report, and a better objective to
+optimize against.
 """
 import numpy as np
 
 # ======================================================
-# SCOPE: Structured Clustering Output Performance Evaluation
+# SCOPE: Structured Clustering Optimization via Performance Evaluation
 # ======================================================
 # Complete implementation with all 5 components
 # Version: 5.0 (k-NN Density-based core identification)
