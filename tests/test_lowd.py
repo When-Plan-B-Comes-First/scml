@@ -178,3 +178,20 @@ def test_compare_algorithms_ranks_adabox_first_on_clean_blobs():
     assert results.iloc[0]["SCOPE_Overall"] >= results.iloc[1]["SCOPE_Overall"]
     for col in ["ARI", "SCOPE_Overall", "K_found", "Time_s"]:
         assert col in results.columns
+
+
+def test_prepare_recognizes_float_typed_noise_label():
+    # A CSV with a mixed int/-1 label column loads as float64 in pandas
+    # (-1 becomes -1.0). Noise must still be recognised as -1, not treated as
+    # a third real cluster. Regression test for a real bug found while
+    # reproducing the RQ1 CoreRing_Noise30 result.
+    import pandas as pd
+    from scml.lowd import prepare_dataset
+    X, y = _blobs(n=200, centers=2)
+    y_with_float_noise = y.astype(float)
+    y_with_float_noise[:20] = -1.0
+    df = pd.DataFrame(X, columns=["x", "y"])
+    df["label"] = y_with_float_noise   # dtype float64, values like -1.0
+    _, y_enc, rep = prepare_dataset(df, verbose=False)
+    assert rep.n_clusters == 2          # not 3
+    assert (y_enc == -1).sum() == 20

@@ -166,19 +166,42 @@ def _load_source(data, label_column, feature_columns, report):
     return X_raw, y_raw
 
 
+def _is_noise_value(v, noise_set, noise_numeric):
+    """True if a single label value should be treated as noise.
+
+    Compares both as text (case-insensitive, e.g. "noise", "outlier") and, when
+    the value is numeric, as a number -- so -1, -1.0, and "-1" are all
+    recognised as the same noise marker regardless of how pandas typed the
+    column (a mixed int/float column loads as float64, turning -1 into -1.0).
+    """
+    key = str(v).strip()
+    if key.lower() in noise_set:
+        return True
+    try:
+        return float(v) in noise_numeric
+    except (TypeError, ValueError):
+        return False
+
+
 def _encode_labels(y_raw, noise_values, report):
     """Map labels to 0..k-1 integers, preserving noise as -1."""
     y = np.asarray(y_raw)
     noise_set = {str(v).strip().lower() for v in noise_values}
+    noise_numeric = set()
+    for v in noise_values:
+        try:
+            noise_numeric.add(float(v))
+        except (TypeError, ValueError):
+            pass
 
     out = np.empty(len(y), dtype=int)
     mapping = {}
     next_id = 0
     for i, v in enumerate(y):
-        key = str(v).strip()
-        if key.lower() in noise_set:
+        if _is_noise_value(v, noise_set, noise_numeric):
             out[i] = -1
             continue
+        key = str(v).strip()
         if key not in mapping:
             mapping[key] = next_id
             next_id += 1
