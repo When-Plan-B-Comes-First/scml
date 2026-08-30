@@ -56,7 +56,9 @@ def _row(name, X, y_true, y_pred, params, elapsed):
 
 
 def compare_algorithms(X, y_true, algorithms=("AdaBox", "DBSCAN", "OPTICS", "HDBSCAN"),
-                       baseline_max_seconds=None, verbose=True):
+                       baseline_max_seconds=None, slcd_n_trials=None,
+                       slcd_sample_size=None, slcd_cascade_stages=None,
+                       verbose=True):
     """Run and score each algorithm on one prepared dataset.
 
     Parameters
@@ -104,7 +106,9 @@ def compare_algorithms(X, y_true, algorithms=("AdaBox", "DBSCAN", "OPTICS", "HDB
                         model = AdaBox().tune(X, y_true)
                         y_pred, params = model.labels_, model.best_params_
                     else:
-                        slcd = SLCD()
+                        slcd = SLCD(sample_size=slcd_sample_size,
+                                    n_trials=slcd_n_trials,
+                                    cascade_stages=slcd_cascade_stages)
                         y_pred = slcd.fit_predict(X, y_true)
                         params = dict(slcd.best_params_)
                         params["slcd_sample_size"] = slcd.sample_size_
@@ -266,7 +270,8 @@ def benchmark_dataset(data, y=None, label_column=None, feature_columns=None,
                       dataset_name=None,
                       algorithms=("AdaBox", "DBSCAN", "OPTICS", "HDBSCAN"),
                       standardize=True, reduce_to_2d=True,
-                      baseline_max_seconds=None,
+                      baseline_max_seconds=None, slcd_n_trials=None,
+                      slcd_sample_size=None, slcd_cascade_stages=None,
                       show_plots=True, save_dir=None, verbose=True):
     """Clean a dataset, run every algorithm, and report the comparison.
 
@@ -293,6 +298,17 @@ def benchmark_dataset(data, y=None, label_column=None, feature_columns=None,
         large datasets this can take a long time (the published benchmark
         took 30-40+ minutes per dataset on 20-50k points); set this only if
         you explicitly want a faster, capped run instead.
+    slcd_n_trials : int, optional
+        Random Search trials AdaBox uses during SLCD calibration (datasets
+        over 5,000 points). Default None picks by size: 100 below 20,000
+        points, 200 above. Because SLCD tunes on a small sample, raising this
+        is cheap relative to the dataset size.
+    slcd_sample_size : int, optional
+        Calibration sample size. Default None picks by dataset size and
+        cluster count.
+    slcd_cascade_stages : int, optional
+        Number of SLCD cascade stages. Default None picks by size (1 below
+        20,000 points, 2 above).
     show_plots : bool
         Display the plots (set False in scripts / CI).
     save_dir : str, optional
@@ -329,7 +345,8 @@ def benchmark_dataset(data, y=None, label_column=None, feature_columns=None,
 
     results, predictions = compare_algorithms(
         X, y_true, algorithms, baseline_max_seconds=baseline_max_seconds,
-        verbose=verbose)
+        slcd_n_trials=slcd_n_trials, slcd_sample_size=slcd_sample_size,
+        slcd_cascade_stages=slcd_cascade_stages, verbose=verbose)
 
     if verbose:
         print_results_table(results, dataset_name)
