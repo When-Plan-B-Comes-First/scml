@@ -98,7 +98,11 @@ def optimize_dbscan(X, y_true, metric="SCOPE", max_seconds=None,
     t0 = time.time()
     n_tried, n_skipped_dense, n_skipped_degenerate = 0, 0, 0
 
-    eps_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5]
+    # Extended below 0.1: on large, dense datasets the optimum can sit at the
+    # old grid floor, which would under-tune DBSCAN and make the comparison
+    # unfair. The low end is cheap to evaluate, so there is no reason to omit it.
+    eps_values = [0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5,
+                  0.6, 0.7, 0.8, 0.9, 1.0, 1.5]
     min_samples_values = [3, 5, 7, 10, 15, 20, 30]
     n_total = len(eps_values) * len(min_samples_values)
 
