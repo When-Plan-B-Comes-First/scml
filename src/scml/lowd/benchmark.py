@@ -55,7 +55,7 @@ def _row(name, X, y_true, y_pred, params, elapsed):
 
 
 def compare_algorithms(X, y_true, algorithms=("AdaBox", "DBSCAN", "OPTICS", "HDBSCAN"),
-                       verbose=True):
+                       baseline_max_seconds=None, verbose=True):
     """Run and score each algorithm on one prepared dataset.
 
     Parameters
@@ -96,11 +96,11 @@ def compare_algorithms(X, y_true, algorithms=("AdaBox", "DBSCAN", "OPTICS", "HDB
                     model = AdaBox().tune(X, y_true)
                     y_pred, params = model.labels_, model.best_params_
                 elif name == "DBSCAN":
-                    y_pred, params = optimize_dbscan(X, y_true)
+                    y_pred, params = optimize_dbscan(X, y_true, max_seconds=baseline_max_seconds)
                 elif name == "OPTICS":
-                    y_pred, params = optimize_optics(X, y_true)
+                    y_pred, params = optimize_optics(X, y_true, max_seconds=baseline_max_seconds)
                 elif name == "HDBSCAN":
-                    y_pred, params = optimize_hdbscan(X, y_true)
+                    y_pred, params = optimize_hdbscan(X, y_true, max_seconds=baseline_max_seconds)
                 else:
                     raise ValueError(f"Unknown algorithm: {name}")
             elapsed = time.time() - t0
@@ -251,6 +251,7 @@ def benchmark_dataset(data, y=None, label_column=None, feature_columns=None,
                       dataset_name=None,
                       algorithms=("AdaBox", "DBSCAN", "OPTICS", "HDBSCAN"),
                       standardize=True, reduce_to_2d=True,
+                      baseline_max_seconds=None,
                       show_plots=True, save_dir=None, verbose=True):
     """Clean a dataset, run every algorithm, and report the comparison.
 
@@ -270,6 +271,13 @@ def benchmark_dataset(data, y=None, label_column=None, feature_columns=None,
         Which methods to compare.
     standardize, reduce_to_2d : bool
         Cleaning options, see :func:`scml.lowd.prepare_dataset`.
+    baseline_max_seconds : float, optional
+        Time cap per baseline algorithm's grid search. Default None means no
+        cap -- DBSCAN/OPTICS/HDBSCAN always get the full grid, exactly like
+        AdaBox gets its full search, so the comparison stays fair. On very
+        large datasets this can take a long time (the published benchmark
+        took 30-40+ minutes per dataset on 20-50k points); set this only if
+        you explicitly want a faster, capped run instead.
     show_plots : bool
         Display the plots (set False in scripts / CI).
     save_dir : str, optional
@@ -296,10 +304,16 @@ def benchmark_dataset(data, y=None, label_column=None, feature_columns=None,
         print(f"\nRunning {len(algorithms)} algorithms on "
               f"{len(X)} points ...")
         if len(X) > 5000:
-            print("  note: over 5,000 points - AdaBox uses the SLCD path, "
-                  "baselines still use full grid search")
+            print("  note: over 5,000 points - AdaBox uses the SLCD path. "
+                  "DBSCAN/OPTICS/HDBSCAN still run their FULL grid search on "
+                  "the full data by default (baseline_max_seconds=None), for "
+                  "a fair comparison -- this can take 20-40+ minutes per "
+                  "dataset at 20-50k points. Pass baseline_max_seconds=N to "
+                  "cap it if you want a faster, less exhaustive run.")
 
-    results, predictions = compare_algorithms(X, y_true, algorithms, verbose)
+    results, predictions = compare_algorithms(
+        X, y_true, algorithms, baseline_max_seconds=baseline_max_seconds,
+        verbose=verbose)
 
     if verbose:
         print_results_table(results, dataset_name)
