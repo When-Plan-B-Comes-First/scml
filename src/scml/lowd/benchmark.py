@@ -24,6 +24,7 @@ import warnings
 import numpy as np
 
 from .adabox import AdaBox
+from .slcd import SLCD
 from .baselines import HAS_HDBSCAN, optimize_dbscan, optimize_hdbscan, optimize_optics
 from .metrics import scope_report
 from .prepare import prepare_dataset
@@ -93,8 +94,22 @@ def compare_algorithms(X, y_true, algorithms=("AdaBox", "DBSCAN", "OPTICS", "HDB
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if name == "AdaBox":
-                    model = AdaBox().tune(X, y_true)
-                    y_pred, params = model.labels_, model.best_params_
+                    # Up to 5,000 points: tune directly on the full data
+                    # (exhaustive GS, the published protocol). Above that,
+                    # use SLCD -- sample, calibrate on the sample, deploy the
+                    # frozen parameters to the full dataset. That is what SLCD
+                    # exists for, and it is dramatically faster than tuning
+                    # the full dataset at scale.
+                    if len(X) <= 5000:
+                        model = AdaBox().tune(X, y_true)
+                        y_pred, params = model.labels_, model.best_params_
+                    else:
+                        slcd = SLCD()
+                        y_pred = slcd.fit_predict(X, y_true)
+                        params = dict(slcd.best_params_)
+                        params["slcd_sample_size"] = slcd.sample_size_
+                        params["slcd_n_trials"] = slcd.n_trials_
+                        params["slcd_cascade_stages"] = slcd.cascade_stages_
                 elif name == "DBSCAN":
                     y_pred, params = optimize_dbscan(X, y_true, max_seconds=baseline_max_seconds)
                 elif name == "OPTICS":
@@ -304,7 +319,8 @@ def benchmark_dataset(data, y=None, label_column=None, feature_columns=None,
         print(f"\nRunning {len(algorithms)} algorithms on "
               f"{len(X)} points ...")
         if len(X) > 5000:
-            print("  note: over 5,000 points - AdaBox uses the SLCD path. "
+            print("  note: over 5,000 points - AdaBox uses SLCD (tunes on a "
+                  "small sample, then deploys to the full dataset). "
                   "DBSCAN/OPTICS/HDBSCAN still run their FULL grid search on "
                   "the full data by default (baseline_max_seconds=None), for "
                   "a fair comparison -- this can take 20-40+ minutes per "
