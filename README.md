@@ -14,7 +14,7 @@ The paradigm ships in two tracks:
 | Track | Components | Status |
 |-------|-----------|--------|
 | **Low-D** | SCOPE (metric) · AdaBox (clustering) · SLCD (parameter transfer) | **Live** |
-| **High-D** | Graph-SCOPE · AdaGraph · DA-Sampler | Coming soon |
+| **High-D** | AdaGraph (clustering) · Graph-SCOPE (unsupervised metric) · SLCD | **Live** |
 
 ---
 
@@ -193,13 +193,69 @@ install, run one command, see the numbers.
 
 ---
 
-## High-D track (coming soon)
+## High-D track
 
-The high-D track extends SC-ML to graph-structured and high-dimensional data
-with **Graph-SCOPE**, **AdaGraph**, and **DA-Sampler**, using the high-D SLCD
-(Sample → Learn → Classify → Deploy). The methods are described in the
-[AdaGraph preprint](https://arxiv.org/abs/2605.16320); the code is in
-preparation.
+AdaGraph clusters **in the original dimensionality** — no PCA, no UMAP, no
+projection to 2-D first. In high dimensions absolute distances stop being
+informative, but *relative neighbourhoods* still are, so AdaGraph builds a
+k-nearest-neighbour graph and runs adaptive density clustering on that.
+
+```python
+from scml.highd import AdaGraph, graph_scope_score
+
+labels = AdaGraph().tune(X, y, n_trials=400).labels_
+```
+
+**Graph-SCOPE** is an unsupervised structural index — it judges a clustering
+from graph topology alone, with **no ground truth**. Its natural comparison is
+Silhouette, not ARI, and it works on the output of any clustering algorithm:
+
+```python
+from scml.highd import graph_scope_score, graph_scope_report
+graph_scope_score(X, labels)      # no y needed
+graph_scope_report(X, labels)     # five-component breakdown
+```
+
+> **Signal, not judge.** Graph-SCOPE is a *selection* signal. Using it to both
+> choose a clustering and then pronounce that clustering good is circular.
+> Judge with supervised SCOPE or ARI against held-out labels.
+
+**High-D SLCD** — *Sample → Learn → Classify → Deploy.* AdaGraph is tuned on a
+density-aware sample, then the remaining points are assigned to the sample's
+clusters by a two-pass kNN vote:
+
+```python
+from scml.highd import SLCD
+labels = SLCD(n_trials=400).fit_predict(X_large, y_large)
+```
+
+### SLCD is a family, not one algorithm
+
+Both tracks share the invariant that gives SLCD its value — **neither ever
+tunes the full dataset** — but they reach it differently, and the two
+implementations are not interchangeable:
+
+| | Low-D | High-D |
+|---|---|---|
+| Expansion | Sample → **Label** → **Calibrate** → Deploy | Sample → **Learn** → **Classify** → Deploy |
+| Algorithm | AdaBox | AdaGraph |
+| Sampling | stratified | density-aware (preserves rare modes) |
+| What "Deploy" means | **parameter transfer** — sample-tuned parameters cluster the full data | **point assignment** — the sample is clustered, remaining points join by kNN vote |
+
+### Benchmark your own high-D dataset
+
+```python
+from scml.highd import benchmark_highd, compare_k_selection
+
+benchmark_highd(X, y)        # AdaGraph vs HDBSCAN / K-Means / Ward
+compare_k_selection(X, y)    # Graph-SCOPE vs Silhouette for choosing k
+```
+
+`benchmark_highd` tunes every algorithm **twice — once on SCOPE and once on
+ARI — and reports both**, so a win can't be an artifact of the headline metric
+happening to be the one a method optimised. `compare_k_selection` includes a
+shuffled-label negative control: if it doesn't score ~0, the harness is broken
+and the results are void.
 
 ---
 

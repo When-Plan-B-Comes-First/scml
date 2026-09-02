@@ -214,3 +214,56 @@ user-supplied dataset:
 coordinate column (e.g. one named `y`) as ground truth; label candidates are
 checked in priority order and validated for plausibility, and an implausible
 cluster count raises rather than producing a meaningless benchmark.
+
+
+---
+
+# High-D track specification
+
+## Algorithms
+
+- **AdaGraph** — graph-native adaptive density clustering. Operates in the
+  original dimensionality; never reduces to 2-D first. Internal class name
+  `AdaBoxGraph` is retained in `_engine.py`; the public estimator is
+  `scml.highd.AdaGraph`. **"AdaHD" must never appear in any public-facing
+  place.**
+- **Graph-SCOPE** — unsupervised structural validation index. Five components:
+  modularity 60% (Reichardt-Bornholdt, gamma=1.5), boundary sharpness 10%,
+  internal consistency 20%, noise legitimacy 5%, partition balance 5%.
+  Component C4 defaults to graph cohesion (works on any algorithm's labels);
+  passing `relative_densities` switches it to the density criterion, which is
+  only available for AdaGraph output. Both agree exactly when a clustering
+  marks no noise.
+- **High-D SLCD** — Sample → Learn → Classify → Deploy. Density-aware sample,
+  400-trial random search over 12 parameters scored by SCOPE, then two-pass
+  kNN vote (`prototype_deploy`) to assign the remaining points.
+
+## Cross-track dependency
+
+The high-D engine imports supervised SCOPE from the low-D track
+(`from ..lowd.scope import compute_dice_metrics`). This is intentional and is
+one reason the tracks live in a single repository.
+
+## Methodological rules (must not be relaxed)
+
+1. **Graph-SCOPE is a signal, never a judge.** It selects; supervised SCOPE
+   and ARI judge against held-out labels. Letting it do both is circular.
+2. **Baselines are tuned on both objectives.** `benchmark_highd` tunes every
+   algorithm once against SCOPE and once against ARI, and reports both, so no
+   method benefits from the headline metric being the one it optimised.
+3. **Negative control.** `compare_k_selection` scores a shuffled labelling; if
+   its ARI is not ~0 the harness is broken and results are void.
+4. **The SuperCon result is withdrawn** and must not appear in any benchmark,
+   reproduce target, or documentation.
+5. **Report the non-monotonic advantage honestly.** Graph-SCOPE's edge over
+   Silhouette peaks in the mid-noise regime and vanishes when the problem is
+   unsolvable for all methods. Quote peak and endpoint together.
+
+## Default sample sizes (high-D SLCD)
+
+| dataset size | sample |
+|---|---|
+| <= 2,000 | all points (cluster directly) |
+| < 20,000 | 1,000 |
+| < 200,000 | 2,000 |
+| >= 200,000 | 5,000 |
