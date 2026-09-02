@@ -24,6 +24,11 @@ The paradigm ships in two tracks:
 pip install git+https://github.com/When-Plan-B-Comes-First/scml.git
 ```
 
+<sub>Run that in a **terminal**. In a Jupyter/VS Code notebook, prefix it with
+`%` instead — `%pip install git+https://...` — which installs into the running
+kernel's own environment. A plain `pip install ...` in a notebook cell is a
+`SyntaxError`, because the cell is Python, not a shell.</sub>
+
 <sub>Installs straight from GitHub. A shorter `pip install scml` will work once
 the package is published to PyPI.</sub>
 
@@ -129,6 +134,8 @@ baselines on it and reports the comparison:
 pip install "scml[benchmark] @ git+https://github.com/When-Plan-B-Comes-First/scml.git"
 ```
 
+<sub>In a notebook: `%pip install "scml[benchmark] @ git+https://..."`</sub>
+
 ```python
 from scml.lowd import benchmark_dataset
 
@@ -176,20 +183,45 @@ Or from the command line:
 python examples/benchmark_my_dataset.py my_data.csv
 ```
 
+<sub>A terminal command, run from a clone of this repository (the `examples/`
+folder ships with the repo, not the installed package).</sub>
+
 ---
 
 ## Reproduce the paper results
 
 The `reproduce/` directory regenerates the figures and tables from the paper
-with a single command:
+with a single command. It runs **two experiments, each in the regime it is
+meant for** — because applying the wrong tool at the wrong scale is the fastest
+way to make a good method look bad:
+
+1. **Small data (≤ 5,000 points)** — AdaBox tuned directly, no SLCD, against
+   grid-searched DBSCAN. Mean SCOPE **0.933 vs 0.712**.
+2. **Large data (30k–50k points)** — SLCD tuned on a 500-point sample and
+   deployed to everything. Mean transfer gap **−0.000 SCOPE while tuning on
+   1–1.7% of the data**.
 
 ```bash
 pip install "scml[reproduce] @ git+https://github.com/When-Plan-B-Comes-First/scml.git"
-python reproduce/run_all.py
 ```
 
-Outputs land in `reproduce/outputs/`. This is the validation proof: clone,
-install, run one command, see the numbers.
+Then, **from a terminal inside a clone of this repository**:
+
+```bash
+git clone https://github.com/When-Plan-B-Comes-First/scml.git
+cd scml
+python reproduce/run_all.py          # low-D  (a few minutes)
+python reproduce/highd/run_all.py    # high-D (10-15 minutes)
+```
+
+> The `reproduce/` scripts ship with the **repository**, not with the installed
+> package, so you need a clone to run them. They are scripts, not notebook
+> cells: `python reproduce/run_all.py` typed into a notebook is a
+> `SyntaxError`. From a notebook you could use `!python reproduce/run_all.py`,
+> but a terminal is easier to watch.
+
+Outputs land in `reproduce/outputs/` and `reproduce/highd/outputs/`. This is
+the validation proof: clone, install, run one command, see the numbers.
 
 ---
 
@@ -263,6 +295,9 @@ Or from the command line:
 ```bash
 python examples/benchmark_my_highd_dataset.py my_data.csv
 ```
+
+<sub>A terminal command, run from a clone of this repository (the `examples/`
+folder ships with the repo, not the installed package).</sub>
 
 If you already have arrays, or want the k-selection comparison:
 
