@@ -333,3 +333,200 @@ def compare_k_selection(X, y, clusterer="KMeans", k_max=20, k_graph=15,
         print()
 
     return results
+
+
+# ---------------------------------------------------------------------------
+# Plots and the one-call entry point for user datasets
+# ---------------------------------------------------------------------------
+
+ALGO_COLORS_HD = {"AdaGraph": "blue", "HDBSCAN": "purple",
+                  "KMeans": "green", "Ward": "orange"}
+
+
+def plot_highd_results(results, dataset_name="dataset", save_path=None,
+                       show=True):
+    """Grouped bars of SCOPE and ARI per (algorithm, tuning objective)."""
+    import matplotlib.pyplot as plt
+
+    labels = [f"{r.Algorithm}\n(tuned on {r.Tuned_On})"
+              for r in results.itertuples()]
+    x = np.arange(len(labels))
+    width = 0.38
+
+    fig, ax = plt.subplots(figsize=(max(9, 1.6 * len(labels)), 5.5))
+    ax.bar(x - width / 2, results["SCOPE"], width, label="SCOPE", alpha=0.85)
+    ax.bar(x + width / 2, results["ARI"], width, label="ARI", alpha=0.85)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=9)
+    ax.set_ylabel("Score", fontweight="bold")
+    ax.set_ylim(0, 1.08)
+    ax.set_title(f"{dataset_name}: high-D comparison\n"
+                 "(each method tuned on both objectives; both reported)",
+                 fontweight="bold")
+    ax.legend()
+    ax.grid(True, alpha=0.3, axis="y")
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.show() if show else plt.close()
+
+
+def plot_highd_projection(X, y_true, predictions, dataset_name="dataset",
+                          save_path=None, show=True):
+    """Ground truth beside each clustering, shown on a 2-D PCA projection.
+
+    The projection is **for viewing only** -- every algorithm clustered in the
+    full original dimensionality. Points that look overlapping here may be far
+    apart in the real space.
+    """
+    import matplotlib.pyplot as plt
+    from sklearn.decomposition import PCA
+    from sklearn.metrics import adjusted_rand_score
+
+    n = len(predictions)
+    if n == 0:
+        return
+    P = PCA(n_components=2, random_state=42)
+    X2 = P.fit_transform(X)
+    var = P.explained_variance_ratio_.sum()
+
+    fig, axes = plt.subplots(1, n + 1, figsize=(5 * (n + 1), 5))
+    if n + 1 == 1:
+        axes = [axes]
+
+    ax = axes[0]
+    ax.scatter(X2[:, 0], X2[:, 1], c=y_true, cmap="tab10", s=18, alpha=0.7)
+    ax.set_title(f"Ground Truth\n(k={len(set(y_true[y_true >= 0]))})",
+                 fontsize=13, fontweight="bold")
+    ax.set_xlabel("PC1")
+    ax.set_ylabel("PC2")
+    ax.grid(alpha=0.3)
+
+    for i, (name, lbl) in enumerate(predictions.items(), start=1):
+        ax = axes[i]
+        lbl = np.asarray(lbl)
+        cm, nm = lbl >= 0, lbl == -1
+        if cm.any():
+            ax.scatter(X2[cm, 0], X2[cm, 1], c=lbl[cm], cmap="tab10", s=18,
+                       alpha=0.7)
+        if nm.any():
+            ax.scatter(X2[nm, 0], X2[nm, 1], c="lightgray", s=18, alpha=0.5,
+                       marker="x", label="Noise")
+            ax.legend()
+        ax.set_title(f"{name} (k={len(set(lbl[lbl >= 0]))})\n"
+                     f"ARI: {adjusted_rand_score(y_true, lbl):.3f} | "
+                     f"SCOPE: {_scope(X, y_true, lbl):.3f}",
+                     fontsize=12, fontweight="bold",
+                     color=ALGO_COLORS_HD.get(name, "black"))
+        ax.set_xlabel("PC1")
+        ax.set_ylabel("PC2")
+        ax.grid(alpha=0.3)
+
+    plt.suptitle(f"High-D clustering: {dataset_name}  —  PCA view for display "
+                 f"only ({var:.0%} of variance; clustering used all "
+                 f"{X.shape[1]} dimensions)",
+                 fontsize=14, fontweight="bold", y=1.03)
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.show() if show else plt.close()
+
+
+def benchmark_highd_dataset(data, y=None, label_column=None,
+                            feature_columns=None, dataset_name=None,
+                            algorithms=("AdaGraph", "HDBSCAN", "KMeans", "Ward"),
+                            objectives=("SCOPE", "ARI"), standardize=True,
+                            max_samples=None, n_trials=400,
+                            hdbscan_trials=200, k_max=20, show_plots=True,
+                            save_dir=None, verbose=True):
+    """Clean a high-D dataset, run every algorithm, and report the comparison.
+
+    The high-D counterpart of :func:`scml.lowd.benchmark_dataset`. Hand it a
+    CSV and it does the rest -- but unlike the low-D version it **keeps every
+    dimension**, because clustering natively is the point of AdaGraph.
+
+    >>> from scml.highd import benchmark_highd_dataset
+    >>> results = benchmark_highd_dataset("my_data.csv")
+
+    Parameters
+    ----------
+    data : str | pandas.DataFrame | numpy.ndarray
+        CSV/TSV path, DataFrame, or feature array (with ``y`` for labels).
+    label_column, feature_columns, standardize, max_samples :
+        Passed to :func:`scml.highd.prepare_highd`.
+    algorithms, objectives, n_trials, hdbscan_trials, k_max :
+        Passed to :func:`benchmark_highd`.
+    show_plots : bool
+        Display the plots (set False in scripts).
+    save_dir : str, optional
+        Directory for ``*_scores.png``, ``*_projection.png`` and
+        ``*_results.csv``.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    from .prepare import prepare_highd
+
+    if dataset_name is None:
+        dataset_name = data if isinstance(data, str) else "dataset"
+        if isinstance(dataset_name, str) and ("/" in dataset_name or "\\" in dataset_name):
+            dataset_name = dataset_name.replace("\\", "/").split("/")[-1]
+
+    X, y_true, _ = prepare_highd(
+        data, y=y, label_column=label_column, feature_columns=feature_columns,
+        standardize=standardize, max_samples=max_samples, verbose=verbose)
+
+    if verbose:
+        print(f"\nRunning {len(algorithms)} algorithms x {len(objectives)} "
+              f"objectives on {len(X)} points in {X.shape[1]} dimensions ...")
+
+    results = benchmark_highd(
+        X, y_true, algorithms=algorithms, objectives=objectives,
+        n_trials=n_trials, hdbscan_trials=hdbscan_trials, k_max=k_max,
+        dataset_name=dataset_name, verbose=verbose)
+
+    # best run per algorithm, for the projection panel
+    predictions = {}
+    for name in results["Algorithm"].unique():
+        sub = results[results.Algorithm == name].sort_values(
+            "SCOPE", ascending=False)
+        predictions[name] = _rerun_best(X, y_true, name, sub.iloc[0],
+                                        n_trials, hdbscan_trials, k_max)
+
+    safe = "".join(c if c.isalnum() or c in "-_" else "_"
+                   for c in str(dataset_name))
+    s_path = p_path = None
+    if save_dir:
+        import os
+        os.makedirs(save_dir, exist_ok=True)
+        s_path = os.path.join(save_dir, f"{safe}_scores.png")
+        p_path = os.path.join(save_dir, f"{safe}_projection.png")
+        results.to_csv(os.path.join(save_dir, f"{safe}_results.csv"),
+                       index=False)
+
+    plot_highd_results(results, dataset_name, s_path, show_plots)
+    plot_highd_projection(X, y_true, predictions, dataset_name, p_path,
+                          show_plots)
+
+    if save_dir and verbose:
+        print(f"Saved table and plots to {save_dir}/")
+    return results
+
+
+def _rerun_best(X, y_true, name, row, n_trials, hdbscan_trials, k_max):
+    """Recompute labels for one algorithm's best configuration (for plotting)."""
+    objective = row["Tuned_On"]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        if name == "AdaGraph":
+            expected_k = int(len(set(y_true[y_true >= 0])))
+            if len(X) > 5000:
+                return SLCD(n_trials=n_trials,
+                            expected_k=expected_k).fit_predict(X, y_true)
+            return AdaGraph().tune(X, y_true, n_trials=n_trials,
+                                   expected_k=expected_k).labels_
+        if name == "HDBSCAN":
+            return tune_hdbscan(X, y_true, objective=objective,
+                                n_trials=hdbscan_trials)[0]
+        return _tune_partitional(X, y_true, name, objective, k_max=k_max)[0]

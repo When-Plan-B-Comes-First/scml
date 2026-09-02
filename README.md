@@ -1,7 +1,7 @@
 # scml — Structure-Centric Machine Learning
 
 [![status: low-D track live](https://img.shields.io/badge/low--D%20track-live-brightgreen)]()
-[![status: high-D track live](https://img.shields.io/badge/high--D%20track-coming%20soon-blue)]()
+[![status: high-D track live](https://img.shields.io/badge/high--D%20track-live-brightgreen)]()
 
 **Structure-Centric Machine Learning (SC-ML)** is a clustering paradigm that
 evaluates and produces clustering by recovering *structure* — cores,
@@ -243,6 +243,28 @@ implementations are not interchangeable:
 | What "Deploy" means | **parameter transfer** — sample-tuned parameters cluster the full data | **point assignment** — the sample is clustered, remaining points join by kNN vote |
 
 ### Benchmark your own high-D dataset
+
+Same one-call experience as the low-D track — hand it a CSV:
+
+```python
+from scml.highd import benchmark_highd_dataset
+
+results = benchmark_highd_dataset("my_data.csv")
+```
+
+That cleans the data, runs AdaGraph against HDBSCAN, K-Means and Ward, prints
+the table, and draws two plots. **Every dimension is kept** — the loader drops
+junk columns, missing rows and zero-variance features, but never reduces
+dimensionality, because clustering natively is the point. PCA appears only in
+the plot, for viewing.
+
+Or from the command line:
+
+```bash
+python examples/benchmark_my_highd_dataset.py my_data.csv
+```
+
+If you already have arrays, or want the k-selection comparison:
 
 ```python
 from scml.highd import benchmark_highd, compare_k_selection

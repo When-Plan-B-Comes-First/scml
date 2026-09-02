@@ -102,3 +102,30 @@ def test_compare_k_selection_runs_negative_control():
     assert len(nc) == 1
     # a shuffled clustering must score ~0 ARI or the harness is broken
     assert abs(float(nc.iloc[0]["ARI"])) < 0.05
+
+
+def test_prepare_highd_keeps_all_dimensions():
+    # The defining difference from the low-D loader: no PCA, no reduction.
+    import pandas as pd
+    from scml.highd import prepare_highd
+    X, y = _hd_blobs(n=400, d=18, centers=4)
+    df = pd.DataFrame(X, columns=[f"f{i}" for i in range(18)])
+    df["sample_id"] = [f"S{i}" for i in range(len(df))]   # junk text column
+    df["constant"] = 1.0                                   # zero variance
+    df["class"] = [["a", "b", "c", "d"][v] for v in y]     # string labels
+    df.loc[0:4, "f2"] = np.nan                             # missing values
+    Xp, yp, rep = prepare_highd(df, verbose=False)
+    assert Xp.shape[1] == 18          # all real features kept, junk dropped
+    assert len(Xp) == len(df) - 5     # NaN rows removed
+    assert rep.label_name == "class"
+    assert rep.n_clusters == 4
+
+
+def test_prepare_highd_rejects_coordinate_like_label():
+    import pandas as pd
+    from scml.highd import prepare_highd
+    X, y = _hd_blobs(n=300, d=10, centers=4)
+    df = pd.DataFrame(X, columns=[f"f{i}" for i in range(10)])
+    df["label"] = y
+    _, _, rep = prepare_highd(df, verbose=False)
+    assert rep.label_name == "label"

@@ -10,3 +10,5 @@ reproduce/outputs/
 .venv/
 env/
 benchmark_output/
+highd_benchmark_output/
+reproduce/highd/outputs/

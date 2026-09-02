@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use SC-ML (scml) in your research, please cite the software and the relevant paper below."
 title: "scml: Structure-Centric Machine Learning (SCOPE, AdaBox, SLCD)"
 type: software
-version: 0.1.0
+version: 0.2.0
 date-released: 2026-08-01
 license-url: "https://github.com/When-Plan-B-Comes-First/scml/blob/main/LICENSE"
 authors:
