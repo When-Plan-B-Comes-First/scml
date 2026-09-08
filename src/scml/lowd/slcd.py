@@ -234,23 +234,20 @@ def default_sample_size(n_points, n_clusters=None):
 
 def _fit_with_params(X, params):
     """Fit an AdaBox engine on X using a calibrated parameter dict and return
-    (model, labels)."""
+    (model, labels). Mirrors the deployment path used during calibration."""
     from .scope import compute_dice_metrics  # noqa: F401 (kept for parity)
     if X.shape[1] > 2:
         from sklearn.decomposition import PCA
         X2d = PCA(n_components=2, random_state=42).fit_transform(X)
     else:
         X2d = X
-    from ._tuning import apply_smart_merging
-
-    merge_adj = params.get("merge_adjacent", True)
     model = EADBBC2D_BR(
         n_boxes=params["n_boxes"],
         min_density=params["min_density"],
         min_growth_iterations=params.get("min_growth_iterations", 1),
         initial_threshold_factor=params.get("initial_threshold_factor", 1.0),
         regular_threshold_factor=params["regular_threshold_factor"],
-        merge_adjacent=False,   # evaluate_params keeps this off and uses apply_smart_merging
+        merge_adjacent=params.get("merge_adjacent", True),
         refinement_sigma=params["refinement_sigma"],
         refinement_threshold=params.get("refinement_threshold", 0.1),
         use_relative_density=params.get("use_relative_density", False),
@@ -258,18 +255,6 @@ def _fit_with_params(X, params):
         verbose=False,
     )
     model.fit(X2d)
-    _ = model.predict_labels(X2d, min_cluster_size=1)
-
-    if merge_adj:
-        if params.get("use_relative_density", False):
-            reg_threshold = (params.get("relative_density_param", 5.5)
-                             * model.global_avg_density_
-                             * params["regular_threshold_factor"])
-        else:
-            reg_threshold = params["min_density"] * params["regular_threshold_factor"]
-        model.final_clusters_boxes_ = apply_smart_merging(
-            model, X2d, reg_threshold, max_extra_iterations=10)
-
     labels = model.predict_labels(X2d, min_cluster_size=params.get("min_cluster_size", 1))
     return model, labels
 

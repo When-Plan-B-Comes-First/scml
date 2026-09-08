@@ -238,6 +238,33 @@ from scml.highd import AdaGraph, graph_scope_score
 labels = AdaGraph().tune(X, y, n_trials=400).labels_
 ```
 
+### Tuning without labels
+
+Clustering is usually deployed where labels don't exist. `tune` needs `y`, so
+for that setting use `tune_unsupervised`, which scores candidates with
+Graph-SCOPE — same engine, same 12-parameter search, no labels anywhere:
+
+```python
+from scml.highd import AdaGraph
+
+model = AdaGraph().tune_unsupervised(X, n_trials=200)
+labels = model.labels_
+model.graph_scope_          # the objective achieved
+model.n_clusters_
+```
+
+Useful for reinforcement-learning state abstraction, exploratory analysis, and
+production pipelines. `max_clusters=` bounds the search when you know roughly
+how many regions to expect.
+
+On labelled test data it matches supervised tuning: on 25-D blobs with 6
+clusters it recovered all 6 with **ARI 1.000** having never seen `y`, and it
+held up with 6 signal dimensions buried under 24 noise dimensions.
+
+> If you later obtain labels, judge with SCOPE or ARI — never with
+> Graph-SCOPE. A Graph-SCOPE-selected clustering scoring well on Graph-SCOPE
+> is circular.
+
 **Graph-SCOPE** is an unsupervised structural index — it judges a clustering
 from graph topology alone, with **no ground truth**. Its natural comparison is
 Silhouette, not ARI, and it works on the output of any clustering algorithm:

@@ -104,6 +104,8 @@ class AdaGraph:
         self.n_clusters_ = None
         self.best_params_ = None
         self.tuning_score_ = None
+        self.graph_scope_ = None
+        self.tuning_history_ = None
         self._engine = None
         self._X = None
 
@@ -192,6 +194,63 @@ class AdaGraph:
         self.labels_ = np.asarray(labels)
         self.best_params_ = params
         self.tuning_score_ = float(score)
+        self.n_clusters_ = int(len(set(self.labels_[self.labels_ >= 0])))
+        self._X = X
+        return self
+
+    def tune_unsupervised(self, X, n_trials=200, k_graph=15,
+                          min_clusters=2, max_clusters=None,
+                          reduced_search=False, aggressive_search=False,
+                          random_state=42, patience=None, verbose=False):
+        """Tune AdaGraph **without labels**, scored by Graph-SCOPE.
+
+        Use this when ground truth does not exist -- reinforcement-learning
+        state abstraction, exploratory analysis, production pipelines. Same
+        engine and search space as :meth:`tune`; only the objective differs:
+        Graph-SCOPE judges a clustering from kNN-graph topology, so no ``y``
+        is needed.
+
+        >>> model = AdaGraph().tune_unsupervised(X, n_trials=200)
+        >>> labels = model.labels_
+        >>> model.graph_scope_          # the objective value achieved
+
+        Note that a clustering selected by Graph-SCOPE is selected on
+        *structure*. If you later obtain labels, judge with SCOPE or ARI --
+        reporting Graph-SCOPE as evidence that a Graph-SCOPE-selected
+        clustering is good would be circular.
+
+        Parameters
+        ----------
+        X : array-like (n_samples, n_features)
+        n_trials : int, default=200
+            Random-search trials.
+        k_graph : int, default=15
+            Neighbours in the scoring graph (built once, reused).
+        min_clusters, max_clusters : int, optional
+            Reject candidates outside this cluster-count range. Setting
+            ``max_clusters`` is worthwhile when you know roughly how many
+            regions to expect.
+        patience : int, optional
+            Stop after this many trials without improvement.
+
+        Returns
+        -------
+        self
+            With ``labels_``, ``n_clusters_``, ``best_params_``,
+            ``graph_scope_`` and ``tuning_history_`` populated.
+        """
+        from .unsupervised import tune_adagraph_unsupervised
+
+        X = np.asarray(X, dtype=float)
+        labels, params, history = tune_adagraph_unsupervised(
+            X, n_trials=n_trials, k_graph=k_graph, min_clusters=min_clusters,
+            max_clusters=max_clusters, reduced_search=reduced_search,
+            aggressive_search=aggressive_search, random_state=random_state,
+            patience=patience, verbose=verbose)
+        self.labels_ = np.asarray(labels)
+        self.best_params_ = params
+        self.graph_scope_ = params["graph_scope"]
+        self.tuning_history_ = history
         self.n_clusters_ = int(len(set(self.labels_[self.labels_ >= 0])))
         self._X = X
         return self
