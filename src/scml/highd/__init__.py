@@ -19,7 +19,7 @@ from .slcd import SLCD, default_sample_size
 from .graph_scope import (graph_scope_score, graph_scope_report,
                           build_knn_graph, compute_graph_scope)
 from .prepare import prepare_highd
-from .unsupervised import tune_adagraph_unsupervised
+from .unsupervised import tune_adaboxgraph_graph_scope
 from .benchmark import (benchmark_highd, benchmark_highd_dataset,
                         compare_k_selection, tune_hdbscan,
                         plot_highd_results, plot_highd_projection)
@@ -27,7 +27,7 @@ from ._engine import precompute_knn, density_aware_sample, prototype_deploy
 
 __all__ = ["AdaGraph", "SLCD", "default_sample_size",
            "graph_scope_score", "graph_scope_report", "build_knn_graph",
-           "compute_graph_scope", "prepare_highd", "tune_adagraph_unsupervised",
+           "compute_graph_scope", "prepare_highd", "tune_adaboxgraph_graph_scope",
            "benchmark_highd",
            "benchmark_highd_dataset", "compare_k_selection", "tune_hdbscan",
            "plot_highd_results", "plot_highd_projection", "precompute_knn",

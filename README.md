@@ -247,9 +247,10 @@ Graph-SCOPE — same engine, same 12-parameter search, no labels anywhere:
 ```python
 from scml.highd import AdaGraph
 
-model = AdaGraph().tune_unsupervised(X, n_trials=200)
+model = AdaGraph().tune_unsupervised(X, n_trials=400)
 labels = model.labels_
 model.graph_scope_          # the objective achieved
+model.noise_frac_           # sanity-check this
 model.n_clusters_
 ```
 
@@ -264,6 +265,13 @@ held up with 6 signal dimensions buried under 24 noise dimensions.
 > If you later obtain labels, judge with SCOPE or ARI — never with
 > Graph-SCOPE. A Graph-SCOPE-selected clustering scoring well on Graph-SCOPE
 > is circular.
+
+> **Use the shipped search grid.** `tune_unsupervised` wraps the author's
+> validated production tuner, whose grid deliberately fixes several parameters
+> rather than searching them. Randomising them yields degenerate high-noise
+> clusterings that score well on Graph-SCOPE while recovering little structure.
+> Defaults are `n_trials=400`, `patience=80`; do not go below ~200 trials.
+> Always sanity-check `model.noise_frac_` and `model.n_clusters_`.
 
 **Graph-SCOPE** is an unsupervised structural index — it judges a clustering
 from graph topology alone, with **no ground truth**. Its natural comparison is

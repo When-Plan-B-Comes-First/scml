@@ -23,12 +23,12 @@ warnings.filterwarnings("ignore")
 X, y = make_blobs(n_samples=1200, n_features=25, centers=6,
                   cluster_std=2.5, random_state=0)
 
-model = AdaGraph().tune_unsupervised(X, n_trials=200)
+model = AdaGraph().tune_unsupervised(X, n_trials=400)
 
 print(f"Dimensions:       {X.shape[1]}")
 print(f"Clusters found:   {model.n_clusters_}  (true: 6 - never shown to the tuner)")
 print(f"Graph-SCOPE:      {model.graph_scope_:.3f}  <- the objective optimised")
-print(f"Trials evaluated: {len(model.tuning_history_)}")
+print(f"Noise discarded:  {100 * model.noise_frac_:.1f}%")
 print()
 print(f"ARI vs held-out truth: {adjusted_rand_score(y, model.labels_):.3f}")
 print("(ARI is the JUDGE. Graph-SCOPE was only the selection SIGNAL --")

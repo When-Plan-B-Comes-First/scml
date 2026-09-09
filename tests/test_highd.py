@@ -134,23 +134,25 @@ def test_prepare_highd_rejects_coordinate_like_label():
 def test_tune_unsupervised_needs_no_labels():
     # The whole point: no y is passed anywhere.
     X, y = _hd_blobs(n=800, d=20, centers=5, std=2.5)
-    m = AdaGraph().tune_unsupervised(X, n_trials=30)
+    m = AdaGraph().tune_unsupervised(X, n_trials=60)
     assert m.labels_ is not None
     assert m.n_clusters_ >= 2
     assert 0.0 <= m.graph_scope_ <= 1.0
-    assert len(m.tuning_history_) > 0
+    # the validated grid keeps noise low; a high value signals a bad grid
+    assert m.noise_frac_ <= 0.5
 
 
 def test_tune_unsupervised_recovers_structure():
     # Selected without labels, judged with them.
     from sklearn.metrics import adjusted_rand_score
     X, y = _hd_blobs(n=900, d=25, centers=5, std=2.0)
-    m = AdaGraph().tune_unsupervised(X, n_trials=40)
+    m = AdaGraph().tune_unsupervised(X, n_trials=100)
     assert adjusted_rand_score(y, m.labels_) > 0.7
 
 
-def test_tune_unsupervised_respects_cluster_bounds():
-    X, y = _hd_blobs(n=800, d=20, centers=6, std=2.5)
-    m = AdaGraph().tune_unsupervised(X, n_trials=30, min_clusters=2,
-                                     max_clusters=8)
-    assert 2 <= m.n_clusters_ <= 8
+def test_tune_unsupervised_keeps_noise_near_zero():
+    # Regression test: a reconstructed grid gave 43% noise; the validated
+    # grid gives ~0%. Guards against anyone "improving" the search space.
+    X, y = _hd_blobs(n=900, d=25, centers=5, std=2.0)
+    m = AdaGraph().tune_unsupervised(X, n_trials=100)
+    assert m.noise_frac_ < 0.10

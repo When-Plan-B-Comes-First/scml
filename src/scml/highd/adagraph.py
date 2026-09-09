@@ -105,7 +105,8 @@ class AdaGraph:
         self.best_params_ = None
         self.tuning_score_ = None
         self.graph_scope_ = None
-        self.tuning_history_ = None
+        self.noise_frac_ = None
+        self.graph_scope_components_ = None
         self._engine = None
         self._X = None
 
@@ -198,59 +199,61 @@ class AdaGraph:
         self._X = X
         return self
 
-    def tune_unsupervised(self, X, n_trials=200, k_graph=15,
-                          min_clusters=2, max_clusters=None,
-                          reduced_search=False, aggressive_search=False,
-                          random_state=42, patience=None, verbose=False):
+    def tune_unsupervised(self, X, n_trials=400, random_state=42,
+                          patience=80, max_seconds=None):
         """Tune AdaGraph **without labels**, scored by Graph-SCOPE.
 
         Use this when ground truth does not exist -- reinforcement-learning
         state abstraction, exploratory analysis, production pipelines. Same
-        engine and search space as :meth:`tune`; only the objective differs:
-        Graph-SCOPE judges a clustering from kNN-graph topology, so no ``y``
-        is needed.
+        engine as :meth:`tune`; only the objective differs, so no ``y`` is
+        needed.
 
-        >>> model = AdaGraph().tune_unsupervised(X, n_trials=200)
+        >>> model = AdaGraph().tune_unsupervised(X, n_trials=400)
         >>> labels = model.labels_
-        >>> model.graph_scope_          # the objective value achieved
+        >>> model.graph_scope_        # the objective achieved
+        >>> model.noise_frac_         # always sanity-check this
 
-        Note that a clustering selected by Graph-SCOPE is selected on
-        *structure*. If you later obtain labels, judge with SCOPE or ARI --
-        reporting Graph-SCOPE as evidence that a Graph-SCOPE-selected
-        clustering is good would be circular.
+        This wraps the author's validated production tuner. Its search grid
+        deliberately FIXES several parameters rather than searching them;
+        randomising them yields degenerate high-noise clusterings that score
+        well on Graph-SCOPE while recovering little structure.
+
+        If you later obtain labels, judge with SCOPE or ARI -- reporting
+        Graph-SCOPE as evidence that a Graph-SCOPE-selected clustering is good
+        would be circular.
 
         Parameters
         ----------
         X : array-like (n_samples, n_features)
-        n_trials : int, default=200
-            Random-search trials.
-        k_graph : int, default=15
-            Neighbours in the scoring graph (built once, reused).
-        min_clusters, max_clusters : int, optional
-            Reject candidates outside this cluster-count range. Setting
-            ``max_clusters`` is worthwhile when you know roughly how many
-            regions to expect.
-        patience : int, optional
-            Stop after this many trials without improvement.
+        n_trials : int, default=400
+            Random-search trials. AdaGraph has 12 tunable parameters, so sparse
+            searches fail; do not go below ~200.
+        patience : int, default=80
+            Stop after this many consecutive trials with no improvement.
+        max_seconds : float, optional
+            Wall-clock cap. Default None (no cap).
 
         Returns
         -------
         self
             With ``labels_``, ``n_clusters_``, ``best_params_``,
-            ``graph_scope_`` and ``tuning_history_`` populated.
+            ``graph_scope_``, ``noise_frac_`` and ``graph_scope_components_``.
         """
-        from .unsupervised import tune_adagraph_unsupervised
+        from .unsupervised import tune_adaboxgraph_graph_scope
 
         X = np.asarray(X, dtype=float)
-        labels, params, history = tune_adagraph_unsupervised(
-            X, n_trials=n_trials, k_graph=k_graph, min_clusters=min_clusters,
-            max_clusters=max_clusters, reduced_search=reduced_search,
-            aggressive_search=aggressive_search, random_state=random_state,
-            patience=patience, verbose=verbose)
+        labels, params, score, components = tune_adaboxgraph_graph_scope(
+            X, n_trials=n_trials, random_state=random_state,
+            patience=patience, max_seconds=max_seconds)
+        if labels is None:
+            raise RuntimeError(
+                f"No valid clustering found in {n_trials} trials. Try raising "
+                "n_trials or patience.")
         self.labels_ = np.asarray(labels)
         self.best_params_ = params
-        self.graph_scope_ = params["graph_scope"]
-        self.tuning_history_ = history
+        self.graph_scope_ = float(score)
+        self.graph_scope_components_ = components
+        self.noise_frac_ = float((self.labels_ == -1).mean())
         self.n_clusters_ = int(len(set(self.labels_[self.labels_ >= 0])))
         self._X = X
         return self

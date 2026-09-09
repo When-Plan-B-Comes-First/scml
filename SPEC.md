@@ -267,3 +267,42 @@ one reason the tracks live in a single repository.
 | < 20,000 | 1,000 |
 | < 200,000 | 2,000 |
 | >= 200,000 | 5,000 |
+
+
+---
+
+
+---
+
+## Unsupervised tuning (Graph-SCOPE objective)
+
+`scml.highd.tune_adaboxgraph_graph_scope` is the author's production
+implementation, lifted unchanged. Reached via
+`AdaGraph().tune_unsupervised(X)`.
+
+**Its search grid must not be "improved" without re-validation.** Three
+parameters are deliberately FIXED rather than searched:
+
+```
+use_shared_neighbor_density = False
+use_mutual_knn              = False
+merge_adjacent              = True
+```
+
+and four are searched that a naive grid would omit:
+`centroid_distance_threshold`, `ks_test_alpha`, `seed_exclusion_hops`,
+`ks_merge_fraction`. C4 is always given `relative_densities_`.
+
+This was established the hard way. A reconstructed grid that randomised those
+three fixed parameters produced **43% noise and ARI 0.127** on an RL
+state-abstraction dataset, versus **0% noise** for the validated grid on the
+same data. The winning degenerate configuration had
+`use_shared_neighbor_density=True`.
+
+Defaults: `n_trials=400`, `patience=80`. AdaGraph has 12 tunable parameters, so
+sparse searches fail; do not go below ~200 trials. The production API caps
+wall-clock at 240s to bound a web request; the library default is no cap
+(`max_seconds=None`).
+
+Empirically the validated tuner assigns **0% of points to noise**, consistent
+with the author's results across tens of datasets.
