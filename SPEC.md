@@ -306,3 +306,31 @@ wall-clock at 240s to bound a web request; the library default is no cap
 
 Empirically the validated tuner assigns **0% of points to noise**, consistent
 with the author's results across tens of datasets.
+
+
+---
+
+## Graph-SCOPE component weights
+
+Defaults (validated, used for every published number):
+
+```
+modularity 0.60 | boundary 0.10 | consistency 0.20 | noise 0.05 | balance 0.05
+```
+
+`compute_graph_scope`, `graph_scope_score`, `graph_scope_report` and
+`tune_unsupervised` all accept `weights=`, as a partial dict (unspecified keys
+keep defaults) or a 5-sequence in the order above. Non-unit sets are
+renormalised unless `normalize_weights=False`. `weights=None` must remain
+bit-identical to the validated defaults -- there is a regression test for this.
+
+**A measured finding about C4.** On an RL bottleneck dataset, a clustering
+discarding 43% of points scored *higher* than one discarding 0%, and raising
+the noise weight to 0.90 did **not** flip the ranking. The reason: C4 measures
+noise *legitimacy* (were discarded points genuinely low-density?), not noise
+*quantity*. The corridor points really were sparse, so C4 stayed at 0.80 and no
+reweighting could penalise the discard.
+
+Implication for SCOPE 2.0: reweighting C4 is not the fix. A separate
+**coverage** term -- what fraction of the data was retained -- would be needed
+to penalise volume of discard independently of its legitimacy.

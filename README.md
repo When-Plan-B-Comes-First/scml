@@ -283,6 +283,22 @@ graph_scope_score(X, labels)      # no y needed
 graph_scope_report(X, labels)     # five-component breakdown
 ```
 
+**Component weights are configurable.** The defaults — modularity 0.60,
+boundary 0.10, consistency 0.20, noise 0.05, balance 0.05 — are the validated
+ones and are used unless you say otherwise. Pass a partial dict to reweight
+for your application; unspecified components keep their defaults and the set
+is renormalised to sum to 1:
+
+```python
+graph_scope_score(X, labels, weights={"noise": 0.30})       # penalise discards
+graph_scope_score(X, labels, weights={"modularity": 0.30,
+                                      "consistency": 0.40})
+AdaGraph().tune_unsupervised(X, weights={"noise": 0.30})    # tune against them
+```
+
+> Scores computed with custom weights are **not comparable** to default-weight
+> scores. Report which weights you used.
+
 > **Signal, not judge.** Graph-SCOPE is a *selection* signal. Using it to both
 > choose a clustering and then pronounce that clustering good is circular.
 > Judge with supervised SCOPE or ARI against held-out labels.

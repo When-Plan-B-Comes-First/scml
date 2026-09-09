@@ -156,3 +156,47 @@ def test_tune_unsupervised_keeps_noise_near_zero():
     X, y = _hd_blobs(n=900, d=25, centers=5, std=2.0)
     m = AdaGraph().tune_unsupervised(X, n_trials=100)
     assert m.noise_frac_ < 0.10
+
+
+def test_custom_weights_default_is_unchanged():
+    # Passing weights=None or the explicit defaults must reproduce the
+    # validated score exactly, or every published number would shift.
+    from scml.highd import compute_graph_scope, build_knn_graph, DEFAULT_WEIGHTS
+    from sklearn.cluster import KMeans
+    X, y = _hd_blobs(n=900, d=20, centers=5)
+    knn, _ = build_knn_graph(X, k=15)
+    lab = KMeans(n_clusters=5, n_init=5, random_state=0).fit_predict(X)
+    a = compute_graph_scope(knn, lab)[0]
+    b = compute_graph_scope(knn, lab, weights=None)[0]
+    c = compute_graph_scope(knn, lab, weights=DEFAULT_WEIGHTS)[0]
+    assert abs(a - b) < 1e-12 and abs(a - c) < 1e-12
+
+
+def test_custom_weights_partial_dict_and_sequence():
+    from scml.highd import compute_graph_scope, build_knn_graph, resolve_weights
+    from sklearn.cluster import KMeans
+    X, y = _hd_blobs(n=800, d=20, centers=5)
+    knn, _ = build_knn_graph(X, k=15)
+    lab = KMeans(n_clusters=5, n_init=5, random_state=0).fit_predict(X)
+    # partial dict: unspecified components keep defaults, set renormalises
+    s, comp = compute_graph_scope(knn, lab, weights={"noise": 0.40})
+    assert 0.0 <= s <= 1.0
+    assert abs(sum(comp["weights"].values()) - 1.0) < 1e-9
+    # sequence form, in documented order
+    s2 = compute_graph_scope(knn, lab, weights=[0.6, 0.1, 0.2, 0.05, 0.05])[0]
+    assert abs(s2 - compute_graph_scope(knn, lab)[0]) < 1e-12
+    # resolver normalises
+    w = resolve_weights({"modularity": 2.0, "noise": 2.0})
+    assert abs(sum(w) - 1.0) < 1e-9
+
+
+def test_custom_weights_reject_bad_input():
+    from scml.highd import resolve_weights
+    for bad in [{"nonsense": 1.0}, [0.5, 0.5], {"noise": -1.0},
+                {k: 0.0 for k in ["modularity", "boundary", "consistency",
+                                  "noise", "balance"]}]:
+        try:
+            resolve_weights(bad)
+        except ValueError:
+            continue
+        raise AssertionError(f"should have rejected {bad}")

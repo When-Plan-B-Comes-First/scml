@@ -200,7 +200,7 @@ class AdaGraph:
         return self
 
     def tune_unsupervised(self, X, n_trials=400, random_state=42,
-                          patience=80, max_seconds=None):
+                          patience=80, max_seconds=None, weights=None):
         """Tune AdaGraph **without labels**, scored by Graph-SCOPE.
 
         Use this when ground truth does not exist -- reinforcement-learning
@@ -232,6 +232,13 @@ class AdaGraph:
             Stop after this many consecutive trials with no improvement.
         max_seconds : float, optional
             Wall-clock cap. Default None (no cap).
+        weights : dict | sequence, optional
+            Custom Graph-SCOPE component weights, e.g.
+            ``{"noise": 0.30}`` to penalise discarded points far more heavily
+            than the 5% default. Keys: modularity, boundary, consistency,
+            noise, balance. Unspecified keys keep their defaults and the set is
+            renormalised to sum to 1. Scores from custom weights are not
+            comparable to default-weight scores.
 
         Returns
         -------
@@ -244,7 +251,7 @@ class AdaGraph:
         X = np.asarray(X, dtype=float)
         labels, params, score, components = tune_adaboxgraph_graph_scope(
             X, n_trials=n_trials, random_state=random_state,
-            patience=patience, max_seconds=max_seconds)
+            patience=patience, max_seconds=max_seconds, weights=weights)
         if labels is None:
             raise RuntimeError(
                 f"No valid clustering found in {n_trials} trials. Try raising "

@@ -59,8 +59,72 @@ def build_knn_graph(X, k=15):
     return indices[:, 1:], distances[:, 1:]
 
 
+
+#: The validated default component weights. Every published Graph-SCOPE number
+#: uses these. Changing them changes what "Graph-SCOPE" means, so scores
+#: computed with custom weights are NOT comparable to default-weight scores.
+DEFAULT_WEIGHTS = {
+    "modularity": 0.60,
+    "boundary": 0.10,
+    "consistency": 0.20,
+    "noise": 0.05,
+    "balance": 0.05,
+}
+
+_WEIGHT_ORDER = ("modularity", "boundary", "consistency", "noise", "balance")
+
+
+def resolve_weights(weights=None, normalize=True):
+    """Turn a weights argument into a validated 5-tuple.
+
+    Parameters
+    ----------
+    weights : None | dict | sequence of 5 floats
+        None uses :data:`DEFAULT_WEIGHTS`. A dict may be partial -- unspecified
+        components keep their default, which makes single-component
+        experiments easy: ``{"noise": 0.30}`` raises only the noise term.
+        A sequence is read in the order modularity, boundary, consistency,
+        noise, balance.
+    normalize : bool, default=True
+        Rescale to sum to 1 so the score stays in [0, 1]. With
+        ``normalize=False`` a non-unit sum is passed through unchanged, and the
+        score may leave [0, 1].
+
+    Returns
+    -------
+    tuple of 5 floats, in _WEIGHT_ORDER.
+    """
+    if weights is None:
+        w = dict(DEFAULT_WEIGHTS)
+    elif isinstance(weights, dict):
+        unknown = set(weights) - set(_WEIGHT_ORDER)
+        if unknown:
+            raise ValueError(
+                f"Unknown weight key(s) {sorted(unknown)}. "
+                f"Valid keys: {list(_WEIGHT_ORDER)}")
+        w = dict(DEFAULT_WEIGHTS)
+        w.update({k: float(v) for k, v in weights.items()})
+    else:
+        vals = list(weights)
+        if len(vals) != 5:
+            raise ValueError(
+                f"weights sequence must have 5 values in order "
+                f"{list(_WEIGHT_ORDER)}, got {len(vals)}")
+        w = dict(zip(_WEIGHT_ORDER, (float(v) for v in vals)))
+
+    if any(v < 0 for v in w.values()):
+        raise ValueError(f"weights must be non-negative, got {w}")
+    total = sum(w.values())
+    if total <= 0:
+        raise ValueError("weights must not sum to zero")
+    if normalize and abs(total - 1.0) > 1e-9:
+        w = {k: v / total for k, v in w.items()}
+    return tuple(w[k] for k in _WEIGHT_ORDER)
+
+
 def compute_graph_scope(knn_indices, labels, gamma=1.5,
-                        relative_densities=None):
+                        relative_densities=None, weights=None,
+                        normalize_weights=True):
     """Compute Graph-SCOPE and its five components.
 
     This is the author's validated v3 implementation, unchanged, with C4
@@ -160,7 +224,8 @@ def compute_graph_scope(knn_indices, labels, gamma=1.5,
     max_entr = np.log(n_clusters)
     c5 = entropy / max_entr if max_entr > 1e-10 else 0.0
 
-    score = 0.60 * c1 + 0.10 * c2 + 0.20 * c3 + 0.05 * c4 + 0.05 * c5
+    w = resolve_weights(weights, normalize=normalize_weights)
+    score = w[0] * c1 + w[1] * c2 + w[2] * c3 + w[3] * c4 + w[4] * c5
     components = {
         'c1_modularity':  round(float(c1), 4),
         'c2_boundary':    round(float(c2), 4),
@@ -168,12 +233,15 @@ def compute_graph_scope(knn_indices, labels, gamma=1.5,
         'c4_noise':       round(float(c4), 4),
         'c5_balance':     round(float(c5), 4),
         'overall':        round(float(score), 4),
+        # exact, unrounded: these must sum to 1 after normalisation
+        'weights':        dict(zip(_WEIGHT_ORDER, (float(x) for x in w))),
     }
     return float(score), components
 
 
 def graph_scope_score(X_or_knn, labels, k=15, gamma=1.5,
-                      relative_densities=None, precomputed_graph=False):
+                      relative_densities=None, precomputed_graph=False,
+                      weights=None, normalize_weights=True):
     """Overall Graph-SCOPE in [0, 1] (higher is better).
 
     Parameters
@@ -196,13 +264,18 @@ def graph_scope_score(X_or_knn, labels, k=15, gamma=1.5,
     knn = (np.asarray(X_or_knn) if precomputed_graph
            else build_knn_graph(X_or_knn, k=k)[0])
     return compute_graph_scope(knn, labels, gamma=gamma,
-                               relative_densities=relative_densities)[0]
+                               relative_densities=relative_densities,
+                               weights=weights,
+                               normalize_weights=normalize_weights)[0]
 
 
 def graph_scope_report(X_or_knn, labels, k=15, gamma=1.5,
-                       relative_densities=None, precomputed_graph=False):
+                       relative_densities=None, precomputed_graph=False,
+                       weights=None, normalize_weights=True):
     """Full five-component Graph-SCOPE breakdown as a dict."""
     knn = (np.asarray(X_or_knn) if precomputed_graph
            else build_knn_graph(X_or_knn, k=k)[0])
     return compute_graph_scope(knn, labels, gamma=gamma,
-                               relative_densities=relative_densities)[1]
+                               relative_densities=relative_densities,
+                               weights=weights,
+                               normalize_weights=normalize_weights)[1]

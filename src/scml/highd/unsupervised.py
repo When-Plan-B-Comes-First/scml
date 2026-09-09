@@ -45,18 +45,19 @@ def _get_adabox_model_keys():
     return set(inspect.signature(AdaBoxGraph.__init__).parameters.keys()) - {"self"}
 
 
-def compute_graph_scope(knn_indices, relative_densities, labels):
+def compute_graph_scope(knn_indices, relative_densities, labels, weights=None):
     """Graph-SCOPE with the density-based noise component (C4).
 
     Signature matches the production API: densities are supplied positionally.
     Delegates to :func:`scml.highd.graph_scope.compute_graph_scope`.
     """
     return _graph_scope_2arg(knn_indices, labels,
-                             relative_densities=relative_densities)
+                             relative_densities=relative_densities,
+                             weights=weights)
 
 
 def tune_adaboxgraph_graph_scope(X_sample, n_trials=400, random_state=42,
-                                 patience=80, max_seconds=None):
+                                 patience=80, max_seconds=None, weights=None):
     """
     Random-search tuning using unsupervised Graph-SCOPE as the objective.
 
@@ -71,6 +72,13 @@ def tune_adaboxgraph_graph_scope(X_sample, n_trials=400, random_state=42,
     max_seconds : float, optional
         Wall-clock cap. Default None (no cap). The production API uses 240 to
         bound a web request; research runs on large data need longer.
+    weights : dict | sequence, optional
+        Custom Graph-SCOPE component weights (see
+        :func:`scml.highd.resolve_weights`). Default None uses the validated
+        weights. Tuning against custom weights optimises for a different
+        notion of "good clustering" -- legitimate for application-specific
+        needs, but the resulting scores are not comparable to default-weight
+        scores.
 
     Returns
     -------
@@ -148,7 +156,8 @@ def tune_adaboxgraph_graph_scope(X_sample, n_trials=400, random_state=42,
         try:
             # mdl.knn_indices_ and mdl.relative_densities_ are set by fit()
             score, components = compute_graph_scope(
-                mdl.knn_indices_, mdl.relative_densities_, labels
+                mdl.knn_indices_, mdl.relative_densities_, labels,
+                weights=weights
             )
         except Exception:
             no_improve += 1
