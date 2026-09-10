@@ -334,3 +334,29 @@ reweighting could penalise the discard.
 Implication for SCOPE 2.0: reweighting C4 is not the fix. A separate
 **coverage** term -- what fraction of the data was retained -- would be needed
 to penalise volume of discard independently of its legitimacy.
+
+---
+
+## Release checklist (maintainer)
+
+**Bump the version on every push that changes package code.** Users install
+with `pip install --upgrade git+https://...`, and pip decides whether to
+reinstall by comparing version numbers. If the version is unchanged, pip
+concludes the requirement is already satisfied and silently does nothing — no
+error, no update. Shipping fixes under a stale version number means existing
+users never receive them.
+
+Bump these three together:
+
+```
+pyproject.toml        version = "X.Y.Z"
+src/scml/__init__.py  __version__ = "X.Y.Z"
+CITATION.cff          version: X.Y.Z
+```
+
+Then tag a matching GitHub release (`vX.Y.Z`), so the version has a citable,
+frozen snapshot behind it.
+
+Rough guide: patch for bug fixes, minor for new capability (the high-D track
+was 0.1.0 -> 0.2.0; the validated unsupervised tuner plus configurable
+Graph-SCOPE weights was 0.2.0 -> 0.3.0).

@@ -10,7 +10,7 @@ Quickstart:
     from scml.lowd import AdaBox, scope_score
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from . import lowd
 from . import highd

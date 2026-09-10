@@ -21,13 +21,26 @@ The paradigm ships in two tracks:
 ## 60-second quickstart
 
 ```bash
-pip install git+https://github.com/When-Plan-B-Comes-First/scml.git
+pip install --upgrade git+https://github.com/When-Plan-B-Comes-First/scml.git
 ```
 
-<sub>Run that in a **terminal**. In a Jupyter/VS Code notebook, prefix it with
-`%` instead — `%pip install git+https://...` — which installs into the running
-kernel's own environment. A plain `pip install ...` in a notebook cell is a
-`SyntaxError`, because the cell is Python, not a shell.</sub>
+<sub>**One command, whether it's your first install or an update.** Keep the
+`--upgrade`: without it, pip sees an scml already installed, decides the
+requirement is satisfied, and silently does nothing — no error, no update.
+`--upgrade` is harmless on a first install.</sub>
+
+<sub>**In a notebook** (Jupyter / VS Code), prefix with `%` so it installs into
+the running kernel's environment — `%pip install --upgrade git+https://...` —
+then **restart the kernel**, or it keeps the old module cached. A bare
+`pip install ...` in a notebook cell is a `SyntaxError`, because the cell is
+Python, not a shell.</sub>
+
+<sub>**If it still doesn't update**, you are probably on the same version
+number as the release you already have. Force it:
+`pip install --force-reinstall --no-deps git+https://github.com/When-Plan-B-Comes-First/scml.git`
+— the `--no-deps` matters, since it leaves numpy/scipy/scikit-learn alone
+instead of reinstalling them into a working environment. Check what you ended
+up with: `python -c "import scml; print(scml.__version__)"`.</sub>
 
 <sub>Installs straight from GitHub. A shorter `pip install scml` will work once
 the package is published to PyPI.</sub>
@@ -131,10 +144,10 @@ Want to see how AdaBox handles *your* data? One command runs AdaBox and the
 baselines on it and reports the comparison:
 
 ```bash
-pip install "scml[benchmark] @ git+https://github.com/When-Plan-B-Comes-First/scml.git"
+pip install --upgrade "scml[benchmark] @ git+https://github.com/When-Plan-B-Comes-First/scml.git"
 ```
 
-<sub>In a notebook: `%pip install "scml[benchmark] @ git+https://..."`</sub>
+<sub>In a notebook: `%pip install --upgrade "scml[benchmark] @ git+https://..."`, then restart the kernel.</sub>
 
 ```python
 from scml.lowd import benchmark_dataset
@@ -202,7 +215,7 @@ way to make a good method look bad:
    1–1.7% of the data**.
 
 ```bash
-pip install "scml[reproduce] @ git+https://github.com/When-Plan-B-Comes-First/scml.git"
+pip install --upgrade "scml[reproduce] @ git+https://github.com/When-Plan-B-Comes-First/scml.git"
 ```
 
 Then, **from a terminal inside a clone of this repository**:
