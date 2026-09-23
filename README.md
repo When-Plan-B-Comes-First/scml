@@ -75,7 +75,7 @@ conventions, so AdaBox drops into any workflow you already have.
 
 ## What's in the low-D track
 
-**SCOPE** — *Structured Clustering Optimization via Performance Evaluation.* A
+**SCOPE** — *Structured Clustering Optimization via Partitioned Evaluation.* A
 structure-aware *optimization objective*, not just a report-time score. It
 decomposes a clustering into five interpretable components (core purity,
 boundary recall, cluster precision, noise F1, cluster-count accuracy) and
