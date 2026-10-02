@@ -176,7 +176,14 @@ class AdaBoxGraph:
             labels[list(cluster_pts)] = i
 
         # Stage 5: Refinement
+        n_noise_before = int(np.sum(labels == -1))
         labels = self._refine_boundaries(labels)
+        if self.verbose:
+            n_noise_after = int(np.sum(labels == -1))
+            print(f"  Stage 5: refined {n_noise_before - n_noise_after}/{n_noise_before} "
+                  f"noise points ({n_noise_after} remain)")
+
+        # Filter small clusters
 
         # Filter small clusters
         min_size = max(self.min_cluster_size, 7)
